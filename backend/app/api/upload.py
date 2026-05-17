@@ -90,6 +90,8 @@ async def upload_pasted_text(
     # 1. Upload to Storage
     storage_uri = StorageService.upload_file(file_bytes, filename, "text/plain")
     
+    user_id = current_user.get("uid", "anonymous_user")
+    
     # 2. Run Multi-Agent Analysis
     orchestrator = AIOrchestrator()
     try:
@@ -97,7 +99,7 @@ async def upload_pasted_text(
         report["storage_uri"] = storage_uri
         
         # 3. Save to Database
-        _save_to_firestore(analysis_id, report)
+        _save_to_firestore(analysis_id, report, user_id)
         
     except Exception as e:
         logger.error(f"AI Analysis failed: {e}")

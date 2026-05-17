@@ -4,7 +4,7 @@
 FROM node:20-alpine AS frontend-builder
 WORKDIR /app/frontend
 
-# Declare build arguments for Vite
+# Declare build arguments for Vite (These come from --set-build-env-vars)
 ARG VITE_FIREBASE_API_KEY
 ARG VITE_FIREBASE_AUTH_DOMAIN
 ARG VITE_FIREBASE_PROJECT_ID
@@ -24,13 +24,13 @@ ENV VITE_FIREBASE_APP_ID=$VITE_FIREBASE_APP_ID
 ENV VITE_FIREBASE_MEASUREMENT_ID=$VITE_FIREBASE_MEASUREMENT_ID
 ENV VITE_API_URL=$VITE_API_URL
 
-
 # Copy dependencies manifest and install
 COPY frontend/package*.json ./
 RUN npm install
 
 # Copy source and build static bundle
 COPY frontend/ ./
+RUN if [ -f env.prod ]; then cp env.prod .env; fi
 RUN npm run build
 
 # ==========================================

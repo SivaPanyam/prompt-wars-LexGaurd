@@ -18,7 +18,8 @@ export default function Signup() {
       await loginWithGoogle()
       navigate("/dashboard")
     } catch (err) {
-      setError("Failed to create account with Google.")
+      console.error("Google Signup Error Detailed:", err)
+      setError(`Signup failed: ${err.message || "Please check your console for details."}`)
     } finally {
       setLoading(false)
     }

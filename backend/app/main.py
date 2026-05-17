@@ -20,6 +20,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
+    # We leave COEP as default or unsafe-none to avoid blocking assets
+    return response
+
 app.include_router(upload.router)
 
 @app.get("/health")

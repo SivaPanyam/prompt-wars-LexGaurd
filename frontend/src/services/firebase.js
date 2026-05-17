@@ -2,18 +2,31 @@ import { initializeApp } from "firebase/app"
 import { getAuth, GoogleAuthProvider } from "firebase/auth"
 import { getFirestore } from "firebase/firestore"
 
-// Your web app's Firebase configuration
+// Your web app's Firebase configuration using Vite environment variables
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "mock-api-key",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "mock-domain",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "mock-project-id",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "mock-bucket",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "mock-sender",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "mock-app-id"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 }
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig)
+console.log("Firebase Config Detected:", {
+  ...firebaseConfig,
+  apiKey: firebaseConfig.apiKey ? "PRESENT" : "MISSING"
+})
+
+let app;
+try {
+  if (!firebaseConfig.apiKey) {
+    throw new Error("VITE_FIREBASE_API_KEY is missing. Check your build environment variables.")
+  }
+  app = initializeApp(firebaseConfig)
+  console.log("Firebase initialized successfully")
+} catch (error) {
+  console.error("Firebase Initialization Error:", error)
+}
 
 // Initialize Auth
 export const auth = getAuth(app)

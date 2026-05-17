@@ -12,28 +12,42 @@ export function AuthProvider({ children }) {
   // Handle Google Login
   async function loginWithGoogle() {
     try {
+      console.log("Starting Google Login with Popup...")
       const result = await signInWithPopup(auth, googleProvider)
       const user = result.user
+      console.log("Google Auth SUCCESS! User UID:", user.uid)
 
-      // Check if user exists in Firestore
-      const userRef = doc(db, "users", user.uid)
-      const userSnap = await getDoc(userRef)
+      // Try-catch for Firestore to prevent Auth being blocked by Firestore connectivity
+      try {
+        console.log("Attempting Firestore user check...")
+        const userRef = doc(db, "users", user.uid)
+        
+        // Use a timeout or catch the 'offline' error specifically
+        const userSnap = await getDoc(userRef)
 
-      if (!userSnap.exists()) {
-        // Create new user document
-        await setDoc(userRef, {
-          uid: user.uid,
-          name: user.displayName,
-          email: user.email,
-          createdAt: serverTimestamp(),
-          analysisCount: 0,
-          subscriptionPlan: 'free'
-        })
+        if (!userSnap.exists()) {
+          console.log("Creating new user document in Firestore...")
+          await setDoc(userRef, {
+            uid: user.uid,
+            name: user.displayName,
+            email: user.email,
+            createdAt: serverTimestamp(),
+            analysisCount: 0,
+            subscriptionPlan: 'free'
+          })
+          console.log("User document created successfully.")
+        } else {
+          console.log("User document already exists.")
+        }
+      } catch (firestoreError) {
+        console.error("Firestore Error (Auth still succeeded):", firestoreError)
+        // If it's just a connectivity issue to Firestore, we still have the Auth result
+        // We can proceed and let the app handle the "partially offline" state
       }
       
       return result
     } catch (error) {
-      console.error("Google Login Error:", error)
+      console.error("Critical Google Auth Error:", error)
       throw error
     }
   }

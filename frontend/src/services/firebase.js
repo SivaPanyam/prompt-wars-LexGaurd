@@ -3,7 +3,6 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth"
 import { getFirestore } from "firebase/firestore"
 
 // Your web app's Firebase configuration
-// For development, we use Vite's import.meta.env
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "mock-api-key",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "mock-domain",

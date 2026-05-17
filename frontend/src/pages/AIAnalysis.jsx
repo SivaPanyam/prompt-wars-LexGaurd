@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useSearchParams, useLocation } from "react-router-dom"
 import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/Card"
 import { Badge } from "../components/ui/Badge"
 import { Button } from "../components/ui/Button"
@@ -9,7 +9,9 @@ import CompareVersions from "../components/CompareVersions"
 
 export default function AIAnalysis() {
   const [searchParams] = useSearchParams()
+  const location = useLocation()
   const analysisId = searchParams.get("id")
+  const reportFromState = location.state?.report
 
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -19,6 +21,21 @@ export default function AIAnalysis() {
   const [selectedClauseId, setSelectedClauseId] = useState(null)
 
   useEffect(() => {
+    // If we passed the report through navigation state, use it immediately
+    if (reportFromState) {
+      console.log("Using report from navigation state (Bypassing Firestore fetch)")
+      setReport(reportFromState)
+      if (reportFromState.clauses && reportFromState.clauses.length > 0) {
+        const risky = reportFromState.clauses.find(c => ['high', 'critical'].includes(c.risk_assessment?.severity))
+        setSelectedClauseId(risky ? risky.id : reportFromState.clauses[0].id)
+      }
+      setLoading(false)
+      return
+    }
+
+    let retries = 0;
+    const maxRetries = 3;
+
     async function fetchReport() {
       if (!analysisId) {
         setError("No analysis ID provided in URL.")
@@ -27,17 +44,29 @@ export default function AIAnalysis() {
       }
       try {
         setLoading(true)
+        console.log(`Fetching report for ID: ${analysisId} (Attempt ${retries + 1})`)
         const data = await getAnalysisReport(analysisId)
+        console.log("Report fetched successfully:", data)
         setReport(data)
         // Automatically select the first high/critical risk clause if available, otherwise the first clause
         if (data.clauses && data.clauses.length > 0) {
           const risky = data.clauses.find(c => ['high', 'critical'].includes(c.risk_assessment?.severity))
           setSelectedClauseId(risky ? risky.id : data.clauses[0].id)
         }
+        setError("")
       } catch (err) {
-        setError("Failed to load analysis report. It may still be processing or does not exist.")
+        console.warn(`Fetch attempt ${retries + 1} failed:`, err.message)
+        if (retries < maxRetries) {
+          retries++;
+          console.log(`Retrying in 2 seconds...`)
+          setTimeout(fetchReport, 2000)
+          return
+        }
+        setError(`Failed to load analysis report: ${err.message}. If this persists, please check that your GEMINI_API_KEY is correctly set in the backend environment.`)
       } finally {
-        setLoading(false)
+        if (retries >= maxRetries || report) {
+          setLoading(false)
+        }
       }
     }
     fetchReport()
@@ -280,13 +309,26 @@ export default function AIAnalysis() {
 function AnalysisSkeleton() {
   return (
     <div className="flex h-[calc(100vh-8rem)] gap-6 animate-in fade-in duration-300">
-      <Card className="flex-1 p-8 space-y-6">
-        <div className="w-1/2 h-8 bg-surface-container-high rounded animate-pulse mb-10"></div>
+      <Card className="flex-1 p-8 space-y-6 overflow-hidden">
+        <div className="flex justify-between items-center mb-10">
+          <div className="w-1/2 h-8 bg-surface-container-high rounded animate-pulse"></div>
+          <div className="flex items-center gap-2 text-primary font-medium text-sm">
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+            Orchestrating AI Agents...
+          </div>
+        </div>
+        <div className="p-4 bg-primary/5 rounded-lg border border-primary/10 mb-8">
+          <p className="text-sm text-primary font-medium">Running 6-agent legal intelligence pipeline:</p>
+          <div className="grid grid-cols-3 gap-4 mt-2">
+            <div className="text-[10px] text-on-surface-variant flex items-center gap-1"><div className="w-1.5 h-1.5 bg-primary rounded-full animate-ping"></div> Parser Agent</div>
+            <div className="text-[10px] text-on-surface-variant flex items-center gap-1"><div className="w-1.5 h-1.5 bg-primary rounded-full animate-ping"></div> Risk Agent</div>
+            <div className="text-[10px] text-on-surface-variant flex items-center gap-1"><div className="w-1.5 h-1.5 bg-primary rounded-full animate-ping"></div> Negotiation Agent</div>
+          </div>
+        </div>
         {[...Array(6)].map((_, i) => (
           <div key={i} className="space-y-3">
             <div className={`h-4 bg-surface-container-high rounded animate-pulse ${i % 2 === 0 ? 'w-full' : 'w-5/6'}`}></div>
             <div className={`h-4 bg-surface-container-high rounded animate-pulse ${i % 3 === 0 ? 'w-4/5' : 'w-full'}`}></div>
-            <div className="h-4 w-2/3 bg-surface-container-high rounded animate-pulse"></div>
           </div>
         ))}
       </Card>

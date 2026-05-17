@@ -6,6 +6,22 @@ Built with a highly scalable **React/Vite** frontend and a **FastAPI** backend, 
 
 ---
 
+## 📷 Screenshots
+
+### 🖥️ Dashboard Overview
+![LexGuard Dashboard](docs/images/dashboard.png)
+
+### 🔑 Secure Authentication
+![LexGuard Login](docs/images/login.png)
+
+### 📁 Analyze Contract Workspace
+![Analyze Contract Panel](docs/images/upload.png)
+
+### 📊 Real-Time Risk Analytics
+![Interactive Analytics](docs/images/analytics.png)
+
+---
+
 ## 🌟 Key Features
 
 - **Multi-Agent Architecture**: Six specialized AI agents handle Parsing, Classification, Risk Assessment, Consequence Simulation, Negotiation, and Explainability.

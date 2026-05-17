@@ -18,7 +18,8 @@ export default function Login() {
       await loginWithGoogle()
       navigate("/dashboard")
     } catch (err) {
-      setError("Failed to sign in with Google.")
+      console.error("Google Login Error Detailed:", err)
+      setError(`Login failed: ${err.message || "Please check your console for details."}`)
     } finally {
       setLoading(false)
     }

@@ -1,6 +1,7 @@
 import React, { useState } from "react"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "../components/ui/Card"
 import { Button } from "../components/ui/Button"
+import { Badge } from "../components/ui/Badge"
 import { User, Bell, Shield, Key, CreditCard, Building2, HelpCircle } from "lucide-react"
 import { useAuth } from "../hooks/useAuth"
 import { motion } from "framer-motion"
@@ -143,7 +144,7 @@ export default function Settings() {
                   <div className="bg-primary/5 border border-primary/20 rounded-lg p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <Badge variant="primary" className="mb-2 uppercase tracking-wider text-[10px]">Enterprise Pro</Badge>
+                        <Badge variant="default" className="mb-2 uppercase tracking-wider text-[10px]">Enterprise Pro</Badge>
                         <h3 className="text-2xl font-bold text-on-surface">$499<span className="text-sm text-on-surface-variant font-normal">/month</span></h3>
                       </div>
                       <Button>Upgrade Plan</Button>

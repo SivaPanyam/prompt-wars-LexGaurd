@@ -55,7 +55,7 @@ export default function UploadContract() {
       // Ensure we hit 100% before redirecting
       setUploadProgress(100)
       setTimeout(() => {
-        navigate(`/dashboard/contracts?id=${result.analysis_id}`)
+        navigate(`/dashboard/contracts?id=${result.analysis_id}`, { state: { report: result.report } })
       }, 500)
     } catch (err) {
       setError(err.message || "Failed to upload file")
@@ -84,7 +84,7 @@ export default function UploadContract() {
       clearInterval(interval)
       setUploadProgress(100)
       setTimeout(() => {
-        navigate(`/dashboard/contracts?id=${result.analysis_id}`)
+        navigate(`/dashboard/contracts?id=${result.analysis_id}`, { state: { report: result.report } })
       }, 500)
     } catch (err) {
       setError(err.message || "Failed to upload text")

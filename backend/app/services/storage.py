@@ -12,12 +12,26 @@ try:
     # it might fail or fall back to default compute engine credentials.
     import firebase_admin
     if not firebase_admin._apps:
-        # Assuming VITE_FIREBASE_STORAGE_BUCKET is available or set in env
-        bucket_name = os.environ.get("FIREBASE_STORAGE_BUCKET", "lexguard-mock-bucket.appspot.com")
-        initialize_app(options={'storageBucket': bucket_name})
-    FIREBASE_READY = True
+        try:
+            # Get config from environment
+            bucket_name = os.environ.get("FIREBASE_STORAGE_BUCKET", "lexgaurd-161bb.firebasestorage.app")
+            project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "lexgaurd-161bb")
+            
+            # Initialize with explicit project ID
+            initialize_app(options={
+                'storageBucket': bucket_name,
+                'projectId': project_id
+            })
+            logger.info(f"Firebase Admin initialized for project: {project_id}")
+            FIREBASE_READY = True
+        except Exception as e:
+            logger.warning(f"Firebase Admin SDK could not initialize with credentials: {e}")
+            # We don't raise here, so the app starts in 'Dev Mode'
+            FIREBASE_READY = False
+    else:
+        FIREBASE_READY = True
 except Exception as e:
-    logger.warning(f"Firebase Admin SDK not initialized correctly: {e}")
+    logger.warning(f"Firebase Admin module error: {e}")
     FIREBASE_READY = False
 
 class StorageService:

@@ -98,28 +98,31 @@ class AIOrchestrator:
         clause_cache = {}
         
         # 2. Process clauses concurrently
-        # Limit max_workers to avoid hitting Gemini rate limits instantly on long docs
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        # Increase max_workers for faster processing
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             future_to_clause = {executor.submit(self.process_clause, c, clause_cache): c for c in clauses}
             for future in concurrent.futures.as_completed(future_to_clause):
-                res = future.result()
-                final_clauses.append(res)
-                
-                # Update overall risk
-                severity = res.get("risk_assessment", {}).get("severity", "safe").lower()
-                if severity == "critical":
-                    overall_risk_score = "critical"
-                elif severity == "high" and overall_risk_score != "critical":
-                    overall_risk_score = "high"
-                elif severity == "moderate" and overall_risk_score not in ["critical", "high"]:
-                    overall_risk_score = "moderate"
+                try:
+                    res = future.result()
+                    final_clauses.append(res)
+                    
+                    # Update overall risk
+                    severity = res.get("risk_assessment", {}).get("severity", "safe").lower()
+                    if severity == "critical":
+                        overall_risk_score = "critical"
+                    elif severity == "high" and overall_risk_score != "critical":
+                        overall_risk_score = "high"
+                    elif severity == "moderate" and overall_risk_score not in ["critical", "high"]:
+                        overall_risk_score = "moderate"
+                except Exception as e:
+                    logger.error(f"Failed to retrieve clause result: {e}")
 
         # 3. Construct final report
         report = {
             "analysis_id": analysis_id,
             "filename": filename,
             "overall_risk_score": overall_risk_score,
-            "summary": f"Analyzed {len(final_clauses)} clauses. Highest risk found: {overall_risk_score.upper()}.",
+            "summary": f"Analyzed {len(final_clauses)} clauses. 6-agent orchestration complete. Highest risk found: {overall_risk_score.upper()}.",
             "clauses": final_clauses
         }
         

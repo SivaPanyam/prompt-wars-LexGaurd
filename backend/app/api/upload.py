@@ -25,6 +25,10 @@ class TextUploadRequest(BaseModel):
 
 def _save_to_firestore(analysis_id: str, report: dict, user_id: str):
     """Saves the final report to Firestore so the frontend can retrieve it."""
+    # Ensure user_id is set for dev-mode bypass consistency
+    if not user_id:
+        user_id = "dev_user_123"
+        
     if FIREBASE_READY:
         try:
             db = firestore.client()
@@ -65,14 +69,14 @@ async def upload_document(
         report = orchestrator.analyze_document(extracted_text, analysis_id, file.filename)
         report["storage_uri"] = storage_uri
         
-        # 4. Save to Database
+        # 4. Save to Database (Background-like, don't let it block the response if it fails)
         _save_to_firestore(analysis_id, report, user_id)
+        
+        return {"status": "success", "analysis_id": analysis_id, "report": report}
         
     except Exception as e:
         logger.error(f"AI Analysis failed: {e}")
         raise HTTPException(status_code=500, detail=f"AI Pipeline failed: {str(e)}")
-        
-    return {"status": "success", "analysis_id": analysis_id}
 
 @router.post("/upload-text")
 async def upload_pasted_text(
@@ -101,8 +105,8 @@ async def upload_pasted_text(
         # 3. Save to Database
         _save_to_firestore(analysis_id, report, user_id)
         
+        return {"status": "success", "analysis_id": analysis_id, "report": report}
+        
     except Exception as e:
         logger.error(f"AI Analysis failed: {e}")
         raise HTTPException(status_code=500, detail=f"AI Pipeline failed: {str(e)}")
-    
-    return {"status": "success", "analysis_id": analysis_id}

@@ -1,11 +1,11 @@
 import React from "react"
 import { Outlet, Link, useLocation } from "react-router-dom"
 import { Shield, Home, UploadCloud, FileText, Settings, BarChart2, LogOut } from "lucide-react"
-import { useAuth } from "../context/AuthContext"
+import { useAuth } from "../hooks/useAuth"
 import { motion, AnimatePresence } from "framer-motion"
 
 export default function DashboardLayout() {
-  const { user, logout } = useAuth()
+  const { currentUser: user, logout } = useAuth()
   const location = useLocation()
 
   const navItems = [

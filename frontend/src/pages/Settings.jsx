@@ -2,11 +2,11 @@ import React, { useState } from "react"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "../components/ui/Card"
 import { Button } from "../components/ui/Button"
 import { User, Bell, Shield, Key, CreditCard, Building2, HelpCircle } from "lucide-react"
-import { useAuth } from "../context/AuthContext"
+import { useAuth } from "../hooks/useAuth"
 import { motion } from "framer-motion"
 
 export default function Settings() {
-  const { user } = useAuth()
+  const { currentUser: user } = useAuth()
   const [activeTab, setActiveTab] = useState("profile")
 
   const tabs = [

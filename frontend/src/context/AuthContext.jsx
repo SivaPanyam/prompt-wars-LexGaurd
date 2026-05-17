@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from "react"
 import { auth, googleProvider, db } from "../services/firebase"
-import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth"
+import { signInWithPopup, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth"
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore"
 
 export const AuthContext = createContext()
@@ -38,6 +38,34 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // Handle Test Account Login (Bypass Google)
+  async function loginWithTestAccount() {
+    const testEmail = "test@lexguard.com"
+    const testPass = "lexguard123!"
+    
+    try {
+      // Try to sign in first
+      const result = await signInWithEmailAndPassword(auth, testEmail, testPass)
+      return result
+    } catch (error) {
+      // If it fails (user doesn't exist), create the account
+      console.log("Creating test account because it didn't exist...")
+      const result = await createUserWithEmailAndPassword(auth, testEmail, testPass)
+      const user = result.user
+      
+      const userRef = doc(db, "users", user.uid)
+      await setDoc(userRef, {
+        uid: user.uid,
+        name: "Test Engineer",
+        email: user.email,
+        createdAt: serverTimestamp(),
+        analysisCount: 0,
+        subscriptionPlan: 'enterprise'
+      })
+      return result
+    }
+  }
+
   // Handle Logout
   function logout() {
     return signOut(auth)
@@ -60,6 +88,7 @@ export function AuthProvider({ children }) {
   const value = {
     currentUser,
     loginWithGoogle,
+    loginWithTestAccount,
     logout
   }
 

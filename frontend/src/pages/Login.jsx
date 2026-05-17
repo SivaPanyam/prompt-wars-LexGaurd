@@ -7,7 +7,7 @@ import { useAuth } from "../hooks/useAuth"
 
 export default function Login() {
   const navigate = useNavigate()
-  const { loginWithGoogle } = useAuth()
+  const { loginWithGoogle, loginWithTestAccount } = useAuth()
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -19,6 +19,19 @@ export default function Login() {
       navigate("/dashboard")
     } catch (err) {
       setError("Failed to sign in with Google.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleTestLogin = async () => {
+    try {
+      setError("")
+      setLoading(true)
+      await loginWithTestAccount()
+      navigate("/dashboard")
+    } catch (err) {
+      setError("Failed to sign in with Test Account.")
     } finally {
       setLoading(false)
     }
@@ -39,6 +52,26 @@ export default function Login() {
       </CardHeader>
       <CardContent className="space-y-4 pt-4">
         {error && <div className="p-3 text-sm text-error bg-error/10 border border-error/20 rounded-md">{error}</div>}
+        
+        <Button 
+          className="w-full" 
+          onClick={handleTestLogin}
+          disabled={loading}
+        >
+          {loading ? "Signing in..." : "Login with Test Account"}
+        </Button>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-outline-variant" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-surface px-2 text-on-surface-variant">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
         <Button 
           className="w-full" 
           variant="outline" 

@@ -13,23 +13,9 @@ export function AuthProvider({ children }) {
   async function loginWithGoogle() {
     try {
       const result = await signInWithPopup(auth, googleProvider)
-      const user = result.user
-
-      // Check if user exists in Firestore
-      const userRef = doc(db, "users", user.uid)
-      const userSnap = await getDoc(userRef)
-
-      if (!userSnap.exists()) {
-        // Create new user document
-        await setDoc(userRef, {
-          uid: user.uid,
-          name: user.displayName,
-          email: user.email,
-          createdAt: serverTimestamp(),
-          analysisCount: 0,
-          subscriptionPlan: 'free'
-        })
-      }
+      
+      // We are skipping the Firestore database creation step here
+      // so you don't need a database to log in and use the app.
       
       return result
     } catch (error) {
